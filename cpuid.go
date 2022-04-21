@@ -11,10 +11,7 @@
 package cpuid
 
 import (
-	"flag"
-	"fmt"
 	"math"
-	"os"
 	"runtime"
 	"strings"
 )
@@ -267,9 +264,8 @@ func Detect() {
 	}
 	addInfo(&CPU, safe)
 	if displayFeats != nil && *displayFeats {
-		fmt.Println("cpu features:", strings.Join(CPU.FeatureSet(), ","))
 		// Exit with non-zero so tests will print value.
-		os.Exit(1)
+		panic("detect cpu")
 	}
 	if disableFlag != nil {
 		s := strings.Split(*disableFlag, ",")
@@ -294,17 +290,6 @@ func DetectARM() {
 var detectArmFlag *bool
 var displayFeats *bool
 var disableFlag *string
-
-// Flags will enable flags.
-// This must be called *before* flag.Parse AND
-// Detect must be called after the flags have been parsed.
-// Note that this means that any detection used in init() functions
-// will not contain these flags.
-func Flags() {
-	disableFlag = flag.String("cpu.disable", "", "disable cpu features; comma separated list")
-	displayFeats = flag.Bool("cpu.features", false, "lists cpu features and exits")
-	detectArmFlag = flag.Bool("cpu.arm", false, "allow ARM features to be detected; can potentially crash")
-}
 
 // Supports returns whether the CPU supports all of the requested features.
 func (c CPUInfo) Supports(ids ...FeatureID) bool {
