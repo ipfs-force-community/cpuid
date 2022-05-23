@@ -240,8 +240,12 @@ var darwinHasAVX512 = func() bool { return false }
 var CPU CPUInfo
 
 func init() {
-	initCPU()
-	Detect()
+	//just set default support nothing
+	CPU.ThreadsPerCore = 1
+	CPU.Cache.L1I = -1
+	CPU.Cache.L1D = -1
+	CPU.Cache.L2 = -1
+	CPU.Cache.L3 = -1
 }
 
 // Detect will re-detect current CPU info.
@@ -252,30 +256,7 @@ func init() {
 // If you call this, you must ensure that no other goroutine is accessing the
 // exported CPU variable.
 func Detect() {
-	// Set defaults
-	CPU.ThreadsPerCore = 1
-	CPU.Cache.L1I = -1
-	CPU.Cache.L1D = -1
-	CPU.Cache.L2 = -1
-	CPU.Cache.L3 = -1
-	safe := true
-	if detectArmFlag != nil {
-		safe = !*detectArmFlag
-	}
-	addInfo(&CPU, safe)
-	if displayFeats != nil && *displayFeats {
-		// Exit with non-zero so tests will print value.
-		panic("detect cpu")
-	}
-	if disableFlag != nil {
-		s := strings.Split(*disableFlag, ",")
-		for _, feat := range s {
-			feat := ParseFeature(strings.TrimSpace(feat))
-			if feat != UNKNOWN {
-				CPU.featureSet.unset(feat)
-			}
-		}
-	}
+	//do nothing
 }
 
 // DetectARM will detect ARM64 features.
@@ -284,7 +265,7 @@ func Detect() {
 // If in the future this can be done safely this function may not
 // do anything.
 func DetectARM() {
-	addInfo(&CPU, false)
+	//do nothing
 }
 
 var detectArmFlag *bool
@@ -293,18 +274,15 @@ var disableFlag *string
 
 // Supports returns whether the CPU supports all of the requested features.
 func (c CPUInfo) Supports(ids ...FeatureID) bool {
-	for _, id := range ids {
-		if !c.featureSet.inSet(id) {
-			return false
-		}
-	}
-	return true
+	//support nothing
+	return false
 }
 
 // Has allows for checking a single feature.
 // Should be inlined by the compiler.
 func (c CPUInfo) Has(id FeatureID) bool {
-	return c.featureSet.inSet(id)
+	//has nothing
+	return false
 }
 
 // https://en.wikipedia.org/wiki/X86-64#Microarchitecture_levels
@@ -317,35 +295,19 @@ var level4Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SCE, SSE, SSE2,
 // If features are lacking or non x64 mode, 0 is returned.
 // See https://en.wikipedia.org/wiki/X86-64#Microarchitecture_levels
 func (c CPUInfo) X64Level() int {
-	if c.featureSet.hasSet(level4Features) {
-		return 4
-	}
-	if c.featureSet.hasSet(level3Features) {
-		return 3
-	}
-	if c.featureSet.hasSet(level2Features) {
-		return 2
-	}
-	if c.featureSet.hasSet(level1Features) {
-		return 1
-	}
 	return 0
 }
 
 // Disable will disable one or several features.
 func (c *CPUInfo) Disable(ids ...FeatureID) bool {
-	for _, id := range ids {
-		c.featureSet.unset(id)
-	}
+	//do nothing
 	return true
 }
 
 // Enable will disable one or several features even if they were undetected.
 // This is of course not recommended for obvious reasons.
 func (c *CPUInfo) Enable(ids ...FeatureID) bool {
-	for _, id := range ids {
-		c.featureSet.set(id)
-	}
+	//do nothing
 	return true
 }
 
@@ -388,11 +350,7 @@ func (c CPUInfo) Ia32TscAux() uint32 {
 // to another CPU.
 // If the current core cannot be detected, -1 will be returned.
 func (c CPUInfo) LogicalCPU() int {
-	if c.maxFunc < 1 {
-		return -1
-	}
-	_, ebx, _, _ := cpuid(1)
-	return int(ebx >> 24)
+	return 1
 }
 
 // frequencies tries to compute the clock speed of the CPU. If leaf 15 is
